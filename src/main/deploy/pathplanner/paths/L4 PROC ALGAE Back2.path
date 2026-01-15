@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.139,
+        "y": 2.902
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.285130768586189,
+        "y": 2.699155728519611
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.902104591836735,
+        "y": 0.6858737244897952
+      },
+      "prevControl": {
+        "x": 6.79273816212441,
+        "y": 0.9106824966762452
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Algae Hold Proc",
+      "waypointRelativePos": 0.3372483221476507,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -89.8571357112401
+  },
+  "reversed": false,
+  "folder": "L4 PROC",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 120.06096117842151
+  },
+  "useDefaultConstraints": true
+}
