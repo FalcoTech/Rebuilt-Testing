@@ -124,10 +124,26 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {
     FuelSim.getInstance().updateSim();
+    fuelSimCounter += 1;
 
-    FuelSim.getInstance().spawnFuel(
-        Translation3d.kZero,
-        Translation3d.kZero
-      );
+    if (fuelSimCounter == 1){
+      FuelSim.getInstance().clearFuel();
+    }
+    if ((SmartDashboard.getBoolean("Shoot Fuel", false) || RobotContainer.pilot.getR2Axis() > .4) && fuelSimCounter % 20 == 0){
+      FuelSim.getInstance().spawnFuel(
+        new Translation3d(
+          RobotContainer.drivetrain.getRobotX(),
+          RobotContainer.drivetrain.getRobotY(),
+          .52
+        ),
+        new Translation3d(
+          3.5,
+          2.76,
+          8.5
+        ));
+    }
+    if (fuelSimCounter % 600 == 0){
+      FuelSim.getInstance().clearFuel();
+    }
   }
 }
