@@ -2,7 +2,9 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Vector;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
@@ -19,8 +21,21 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.struct.VectorStruct;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,6 +74,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+
+    private static final Pose2d hubPose = new Pose2d(4.59, 4.03, Rotation2d.fromDegrees(0));
+    private StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("Turret Pose", Pose2d.struct).publish();
+    private StructPublisher<Translation2d> publisher2 = NetworkTableInstance.getDefault().getStructTopic("Turret Vector", Translation2d.struct).publish();
+
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -141,6 +161,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
         configureAutoBuilder();
+
+        SmartDashboard.putNumber("Joystick X", 0);
+        SmartDashboard.putNumber("Joystick Y", 0);
+        SmartDashboard.putNumber("Joystick Rotation", 0);
     }
 
     /**
@@ -287,7 +311,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         //     addVisionMeasurement(mt2.pose, Utils.fpgaToCurrentTime(mt2.timestampSeconds),
         //     VecBuilder.fill(.7, .7, 9999999));
         // }
-
+        runTheNumbers();
     }
 
     private void startSimThread() {
@@ -337,5 +361,63 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+    }
+
+    public double getRobotX(){
+        return getState().Pose.getX();
+    }
+    public double getRobotY(){
+        return getState().Pose.getY();
+    }
+    public double getHubX(){
+        return hubPose.getX();
+    }
+    public double getHubY(){
+        return hubPose.getY();
+    }
+    public double getGyroHeading(){
+        return (getState().RawHeading.getDegrees() + 360000) % 360;        
+    }
+
+    // WORKING ANGLE TO HUB (TRIG BASED)
+    // public double getAngleToHub(){
+    //     double rawAngle = (Math.atan2(getHubY()-getRobotY(), getHubX()-getRobotX()) * 180 / Math.PI - getGyroHeading()) % 360;
+
+    //     if (rawAngle < 0){
+    //         return rawAngle + 360;
+    //     } else {
+    //         return rawAngle;
+    //     }
+    // }
+
+    public double getAngleToHub(){
+        Translation2d robotToGoal = new Translation2d(
+            getHubX() - getRobotX(),
+            getHubY() - getRobotY()
+        );
+        
+        ChassisSpeeds currentFieldRelativeVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, Rotation2d.fromDegrees(getGyroHeading()));
+        Translation2d robotVelocity = new Translation2d(
+            currentFieldRelativeVelocity.vxMetersPerSecond,
+            currentFieldRelativeVelocity.vyMetersPerSecond
+            // 2
+        );
+
+        Translation2d movingShotVector = robotToGoal.minus(robotVelocity);
+
+        double rawAngle = (movingShotVector.getAngle().getDegrees() - getGyroHeading()) % 360;
+        if (rawAngle < 0){
+            return rawAngle + 360;
+        } else {
+            return rawAngle;
+        }
+    }
+
+    public void runTheNumbers(){
+        SmartDashboard.putNumber("Robot X", getRobotX());
+        SmartDashboard.putNumber("Robot Y", getRobotY());
+        SmartDashboard.putNumber("Robot Heading", getGyroHeading());
+        SmartDashboard.putNumber("Angle to Hub", getAngleToHub());
+        publisher.set(new Pose2d(getRobotX(), getRobotY(), Rotation2d.fromDegrees(getAngleToHub() + getGyroHeading())));
     }
 }

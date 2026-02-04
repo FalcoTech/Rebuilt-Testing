@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.*;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -18,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Climb extends SubsystemBase {
   private final SparkMax LeftClimbMotor = new SparkMax(50, MotorType.kBrushless);
   private final SparkMax RightClimbMotor = new SparkMax(51, MotorType.kBrushless);
+
+  private final TalonFX testMotor = new TalonFX(0);
 
   private SparkMaxConfig LeftClimbMotorConfig = new SparkMaxConfig();
   private SparkMaxConfig RightClimbMotorConfig = new SparkMaxConfig();
@@ -33,8 +36,6 @@ public class Climb extends SubsystemBase {
 
 	LeftClimbMotor.configure(LeftClimbMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 	RightClimbMotor.configure(RightClimbMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-
-
   }
 
   @Override

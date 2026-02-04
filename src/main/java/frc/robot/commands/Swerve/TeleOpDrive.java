@@ -4,13 +4,19 @@
 
 package frc.robot.commands.Swerve;
 
+import org.opencv.core.Mat;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.Telemetry;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class TeleOpDrive extends Command {
+  private final PIDController turretPID = new PIDController(.1, 0, 0);
   /** Creates a new TeleOpDrive. */
 
   private final CommandSwerveDrivetrain m_drivetrain = RobotContainer.drivetrain;
@@ -26,18 +32,19 @@ public class TeleOpDrive extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    
     m_drivetrain.setControl(
-    RobotContainer.pilot.rightBumper().getAsBoolean() ? 
+    RobotContainer.pilot.R1().getAsBoolean() ? 
     RobotContainer.driveRobotCentric
-        .withVelocityX((-RobotContainer.pilot.getLeftY() * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive forward with negative Y (forward)
-        .withVelocityY((-RobotContainer.pilot.getLeftX() * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive left with negative X (left)
-        .withRotationalRate((-RobotContainer.pilot.getRightX() * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) 
+        .withVelocityX((-RobotContainer.pilot.getLeftY() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive forward with negative Y (forward)
+        .withVelocityY((-RobotContainer.pilot.getLeftX() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive left with negative X (left)
+        .withRotationalRate((-RobotContainer.pilot.getRightX() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) 
     :
     RobotContainer.drive
-        .withVelocityX((-RobotContainer.pilot.getLeftY() * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive forward with negative Y (forward)
+        .withVelocityX((-RobotContainer.pilot.getLeftY() + SmartDashboard.getNumber("Joystick Y", 0) * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .4)) // Drive forward with negative Y (forward)
         // .withVelocityX((-0.2 * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .5)) // Drive forward with negative Y (forward)
-        .withVelocityY((-RobotContainer.pilot.getLeftX() * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive left with negative X (left)
-        .withRotationalRate((-RobotContainer.pilot.getRightX() * (RobotContainer.pilot.leftBumper().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) 
+        .withVelocityY((-RobotContainer.pilot.getLeftX() - SmartDashboard.getNumber("Joystick X", 0) * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .4)) // Drive left with negative X (left)
+        .withRotationalRate((-RobotContainer.pilot.getRightX() - SmartDashboard.getNumber("Joystick Rotation", 0) * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .4)) 
   );
 
   }

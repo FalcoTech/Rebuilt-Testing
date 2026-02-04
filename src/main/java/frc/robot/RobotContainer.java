@@ -18,6 +18,8 @@ import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -30,7 +32,15 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.ClimbConstants;
+import frc.robot.Constants.ControllerConstants;
+import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.Constants.ElevatorConstants;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.PathPlanningConstants;
+import frc.robot.Constants.WristConstants;
 import frc.robot.commands.Algae.RunAlgaeIntake;
 import frc.robot.commands.Coral.RunCoralIntake;
 import frc.robot.commands.Elevator.RunElevator;
@@ -49,12 +59,13 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Wrist;
+import frc.robot.utils.FuelSim;
 
 import static frc.robot.Constants.*;
 
 public class RobotContainer {
     /* Initialize Game Controllers */
-    public static final CommandXboxController pilot = new CommandXboxController(ControllerConstants.PILOT_CONTROLLER_PORT);
+    public static final CommandPS4Controller pilot = new CommandPS4Controller(ControllerConstants.PILOT_CONTROLLER_PORT);
     public static final CommandXboxController Copilot = new CommandXboxController(ControllerConstants.COPILOT_CONTROLLER_PORT);
 
     /* Set max speeds */
@@ -102,6 +113,8 @@ public class RobotContainer {
 
     public static boolean readyFlipWristL4 = false;
 
+    public static boolean shootFuel = SmartDashboard.putBoolean("Shoot Fuel", false);
+
     public RobotContainer() {
         
         /* Put autonomous chooser on dashboard */
@@ -114,9 +127,17 @@ public class RobotContainer {
         // SmartDashboard.putData("Algae Intake Pathfind", algaeScorePathfind);
         SmartDashboard.putData("Pathfind to Nearest AprilTag", new InstantCommand(() -> tagAlign.pathfindToNearestAprilTagOld(false).schedule()));
 
+        FuelSim.getInstance().spawnStartingFuel();
+        FuelSim.getInstance().registerRobot(.69, .69, .18, () -> drivetrain.getState().Pose, () -> ChassisSpeeds.fromRobotRelativeSpeeds(drivetrain.getState().Speeds, Rotation2d.kZero));
+        FuelSim.getInstance().registerIntake(.1, .2, -.1, .1, () -> true);
+        FuelSim.getInstance().start();
+        FuelSim.getInstance().enableAirResistance();
+
         configureBindings();
 
         SmartDashboard.putBoolean("Enable MegaTag2", false);
+
+
     }
 
     private void configureBindings() {
@@ -126,13 +147,13 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(new TeleOpDrive());
 
         // reset the field-centric heading on start button press
-        pilot.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        pilot.options().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
 
-        pilot.b().whileTrue(tagAlign.pathfindToNearestCoralReefAprilTag(true));
-        pilot.x().whileTrue(tagAlign.pathfindToNearestCoralReefAprilTag(false));
-        pilot.y().whileTrue(tagAlign.pathfindToNearestAlgaeReefAprilTag());
-        pilot.a().whileTrue(tagAlign.pathfindToNearestAlgaeProcAprilTag());
+        pilot.circle().whileTrue(tagAlign.pathfindToNearestCoralReefAprilTag(true));
+        pilot.square().whileTrue(tagAlign.pathfindToNearestCoralReefAprilTag(false));
+        pilot.triangle().whileTrue(tagAlign.pathfindToNearestAlgaeReefAprilTag());
+        // pilot.a().whileTrue(tagAlign.pathfindToNearestAlgaeProcAprilTag());
         pilot.povUp().whileTrue(tagAlign.pathfindToNearestCoralStationAprilTag());
         pilot.povDown().whileTrue(tagAlign.pathfindToNearestBargeAprilTag());
         
@@ -259,14 +280,14 @@ public class RobotContainer {
         // )
         // ));
 
-        Copilot.povUp().and(Copilot.a().negate()).onTrue(new SequentialCommandGroup( //CORAL STATION VALUES
-            new SequentialElevatorSetpoint(ElevatorConstants.CORAL_STATION_POSITION),
-            new ParallelCommandGroup(
-                new SetElevatorToPosition(ElevatorConstants.CORAL_STATION_POSITION),
-                new SetWristToPosition(WristConstants.CORAL_STATION_POSITION),
-                new RumbleCommand(pilot,0.5)
-            )
-        ));
+        // Copilot.povUp().and(Copilot.a().negate()).onTrue(new SequentialCommandGroup( //CORAL STATION VALUES
+        //     new SequentialElevatorSetpoint(ElevatorConstants.CORAL_STATION_POSITION),
+        //     new ParallelCommandGroup(
+        //         new SetElevatorToPosition(ElevatorConstants.CORAL_STATION_POSITION),
+        //         new SetWristToPosition(WristConstants.CORAL_STATION_POSITION),
+        //         new RumbleCommand(pilot,0.5)
+        //     )
+        // ));
 
         Copilot.back().onTrue(new SequentialCommandGroup(new RunCoralIntake(() -> -IntakeConstants.CORAL_SHIMMY_SPEED).withTimeout(.15), new RunCoralIntake(() -> IntakeConstants.CORAL_SHIMMY_SPEED).withTimeout(.15), new RunCoralIntake(() -> -IntakeConstants.CORAL_SHIMMY_SPEED).withTimeout(.15), new RunCoralIntake(() -> IntakeConstants.CORAL_SHIMMY_SPEED).withTimeout(.15), new RunCoralIntake(() -> 0.0).withTimeout(0.15)));
     }

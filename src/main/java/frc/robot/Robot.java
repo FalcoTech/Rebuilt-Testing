@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -12,11 +13,14 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.FuelSim;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   RobotContainer m_robotContainer;
+
+  private double fuelSimCounter = 0;
 
   private final boolean kUseLimelight = true;
   
@@ -110,11 +114,20 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+
+  }
 
   @Override
   public void testExit() {}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    FuelSim.getInstance().updateSim();
+
+    FuelSim.getInstance().spawnFuel(
+        Translation3d.kZero,
+        Translation3d.kZero
+      );
+  }
 }
