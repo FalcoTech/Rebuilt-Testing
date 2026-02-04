@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import org.opencv.core.Mat;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -125,6 +127,8 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
     FuelSim.getInstance().updateSim();
     fuelSimCounter += 1;
+    double dist = Math.sqrt(Math.pow(RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX(), 2) + Math.pow(RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY(), 2));
+    SmartDashboard.putNumber("Dist", dist);
 
     if (fuelSimCounter == 1){
       FuelSim.getInstance().clearFuel();
@@ -133,13 +137,13 @@ public class Robot extends TimedRobot {
       FuelSim.getInstance().spawnFuel(
         new Translation3d(
           RobotContainer.drivetrain.getRobotX(),
-          RobotContainer.drivetrain.getRobotY(),
+          RobotContainer.drivetrain.getRobotY() - .1,
           .52
         ),
         new Translation3d(
-          3.5,
-          2.76,
-          8.5
+          (RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX()),
+          (RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY()),
+          (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
         ));
     }
     if (fuelSimCounter % 600 == 0){
