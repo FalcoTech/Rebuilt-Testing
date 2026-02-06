@@ -8,6 +8,7 @@ import org.opencv.core.Mat;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -141,8 +142,8 @@ public class Robot extends TimedRobot {
           .52
         ),
         new Translation3d(
-          (RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX()),
-          (RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY()),
+          (RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX()) + ChassisSpeeds.fromRobotRelativeSpeeds(RobotContainer.drivetrain.getState().Speeds, RobotContainer.drivetrain.getState().Pose.getRotation()).vxMetersPerSecond,
+          (RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY()) + ChassisSpeeds.fromRobotRelativeSpeeds(RobotContainer.drivetrain.getState().Speeds, RobotContainer.drivetrain.getState().Pose.getRotation()).vyMetersPerSecond,
           (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
         ));
     }
