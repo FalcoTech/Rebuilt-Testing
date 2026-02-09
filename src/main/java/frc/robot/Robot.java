@@ -4,12 +4,21 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radian;
+
 import org.opencv.core.Mat;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -131,21 +140,30 @@ public class Robot extends TimedRobot {
     double dist = Math.sqrt(Math.pow(RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX(), 2) + Math.pow(RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY(), 2));
     SmartDashboard.putNumber("Dist", dist);
 
+    double hubX = RobotContainer.drivetrain.getHubX();
+    double hubY = RobotContainer.drivetrain.getHubY();
+    double robotX = RobotContainer.drivetrain.getRobotX();
+    double robotY = RobotContainer.drivetrain.getRobotY();
+
     if (fuelSimCounter == 1){
       FuelSim.getInstance().clearFuel();
     }
     if ((SmartDashboard.getBoolean("Shoot Fuel", false) || RobotContainer.pilot.getR2Axis() > .4) && fuelSimCounter % 20 == 0){
-      FuelSim.getInstance().spawnFuel(
-        new Translation3d(
-          RobotContainer.drivetrain.getRobotX(),
-          RobotContainer.drivetrain.getRobotY() - .1,
-          .52
-        ),
-        new Translation3d(
-          (RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX()) + ChassisSpeeds.fromRobotRelativeSpeeds(RobotContainer.drivetrain.getState().Speeds, RobotContainer.drivetrain.getState().Pose.getRotation()).vxMetersPerSecond,
-          (RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY()) + ChassisSpeeds.fromRobotRelativeSpeeds(RobotContainer.drivetrain.getState().Speeds, RobotContainer.drivetrain.getState().Pose.getRotation()).vyMetersPerSecond,
-          (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
-        ));
+      // FuelSim.getInstance().spawnFuel(
+      //   new Translation3d(
+      //     RobotContainer.drivetrain.getRobotX(),
+      //     RobotContainer.drivetrain.getRobotY() - .1,
+      //     .52
+      //   ),
+      //   new Translation3d(
+      //     (hubX - robotX) + ChassisSpeeds.fromRobotRelativeSpeeds(RobotContainer.drivetrain.getState().Speeds, RobotContainer.drivetrain.getState().Pose.getRotation()).vxMetersPerSecond,
+      //     (hubY - robotY) + ChassisSpeeds.fromRobotRelativeSpeeds(RobotContainer.drivetrain.getState().Speeds, RobotContainer.drivetrain.getState().Pose.getRotation()).vyMetersPerSecond,
+      //     (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
+
+      //   ));
+      double theta = Units.degreesToRadians(65);
+      double vel = Math.sqrt((9.81*dist*dist)/(2* Math.cos(theta) * Math.cos(theta) * (dist * Math.tan(theta) - 1.5088))); //1.3088
+      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(vel, MetersPerSecond), Angle.ofBaseUnits(1.04, Radian), Angle.ofBaseUnits(Units.degreesToRadians(RobotContainer.drivetrain.getAngleToHub()), Radian), Distance.ofBaseUnits(.52, Meters));
     }
     if (fuelSimCounter % 600 == 0){
       FuelSim.getInstance().clearFuel();
