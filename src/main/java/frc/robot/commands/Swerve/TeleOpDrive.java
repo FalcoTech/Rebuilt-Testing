@@ -36,8 +36,8 @@ public class TeleOpDrive extends Command {
     m_drivetrain.setControl(
     RobotContainer.pilot.R1().getAsBoolean() ? 
     RobotContainer.driveRobotCentric
-        .withVelocityX((-RobotContainer.pilot.getLeftY() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive forward with negative Y (forward)
-        .withVelocityY((-RobotContainer.pilot.getLeftX() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) // Drive left with negative X (left)
+        .withVelocityX((-RobotContainer.pilot.getLeftY() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .35)) // Drive forward with negative Y (forward)
+        .withVelocityY((-RobotContainer.pilot.getLeftX() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .35)) // Drive left with negative X (left)
         .withRotationalRate((-RobotContainer.pilot.getRightX() * (RobotContainer.pilot.L1().getAsBoolean() ? .2 : 1)) * (RobotContainer.MaxSpeed * .7)) 
     :
     RobotContainer.drive

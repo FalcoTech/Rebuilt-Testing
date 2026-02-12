@@ -64,23 +64,23 @@ public class Robot extends TimedRobot {
       if (llMeasurement != null && llMeasurement.tagCount > 0 && Math.abs(omegaRps) < 2.0) {
         RobotContainer.drivetrain.addVisionMeasurement(llMeasurement.pose, llMeasurement.timestampSeconds);
       }
-    }
-    enableMegaTag2 = SmartDashboard.getBoolean("Enable MegaTag2", enableMegaTag2);
+      }
+      enableMegaTag2 = SmartDashboard.getBoolean("Enable MegaTag2", enableMegaTag2);
     // SmartDashboard.getBoolean("Enable MegaTag2", enableMegaTag2);
     
-    if (enableMegaTag2){
-      var driveState = RobotContainer.drivetrain.getState();
-      double headingDeg = driveState.Pose.getRotation().getDegrees();
-      double omegaRps = Units.radiansToRotations(driveState.Speeds.omegaRadiansPerSecond);
+      if (enableMegaTag2){
+        var driveState = RobotContainer.drivetrain.getState();
+        double headingDeg = driveState.Pose.getRotation().getDegrees();
+        double omegaRps = Units.radiansToRotations(driveState.Speeds.omegaRadiansPerSecond);
 
-      LimelightHelpers.SetRobotOrientation("", headingDeg, 0, 0, 0, 0, 0);
-      var llMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
-      if (llMeasurement != null && llMeasurement.tagCount > 0 && Math.abs(omegaRps) < 2.0) {
-        RobotContainer.drivetrain.addVisionMeasurement(llMeasurement.pose, llMeasurement.timestampSeconds,
-          VecBuilder.fill(.5, .5, 9999999));
-        // RobotContainer.drivetrain.addVisionMeasurement(llMeasurement.pose, llMeasurement.timestampSeconds);
+        LimelightHelpers.SetRobotOrientation("", headingDeg, 0, 0, 0, 0, 0);
+        var llMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+        if (llMeasurement != null && llMeasurement.tagCount > 0 && Math.abs(omegaRps) < 2.0) {
+          RobotContainer.drivetrain.addVisionMeasurement(llMeasurement.pose, llMeasurement.timestampSeconds,
+            VecBuilder.fill(.5, .5, 9999999));
+          // RobotContainer.drivetrain.addVisionMeasurement(llMeasurement.pose, llMeasurement.timestampSeconds);
+        }
       }
-    }
   }
 
   @Override
@@ -137,13 +137,11 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
     FuelSim.getInstance().updateSim();
     fuelSimCounter += 1;
-    double dist = Math.sqrt(Math.pow(RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX(), 2) + Math.pow(RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY(), 2));
+    // double dist = Math.sqrt(Math.pow(RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX(), 2) + Math.pow(RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY(), 2));
+    double dist = RobotContainer.drivetrain.getMovingShotVector().getNorm();
     SmartDashboard.putNumber("Dist", dist);
 
-    double hubX = RobotContainer.drivetrain.getHubX();
-    double hubY = RobotContainer.drivetrain.getHubY();
-    double robotX = RobotContainer.drivetrain.getRobotX();
-    double robotY = RobotContainer.drivetrain.getRobotY();
+    
 
     if (fuelSimCounter == 1){
       FuelSim.getInstance().clearFuel();
@@ -161,9 +159,9 @@ public class Robot extends TimedRobot {
       //     (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
 
       //   ));
-      double theta = Units.degreesToRadians(65);
-      double vel = Math.sqrt((9.81*dist*dist)/(2* Math.cos(theta) * Math.cos(theta) * (dist * Math.tan(theta) - 1.5088))); //1.3088
-      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(vel, MetersPerSecond), Angle.ofBaseUnits(1.04, Radian), Angle.ofBaseUnits(Units.degreesToRadians(RobotContainer.drivetrain.getAngleToHub()), Radian), Distance.ofBaseUnits(.52, Meters));
+      double theta = Units.degreesToRadians(64.8);
+      double vel = Math.sqrt((9.81*dist*dist)/(2* Math.cos(theta) * Math.cos(theta) * (dist * Math.tan(theta) - 1.36))); //1.3088
+      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(vel, MetersPerSecond), Angle.ofBaseUnits(1.04, Radian), Angle.ofBaseUnits(Units.degreesToRadians(RobotContainer.drivetrain.getTurretAngle()), Radian), Distance.ofBaseUnits(.56, Meters));
     }
     if (fuelSimCounter % 600 == 0){
       FuelSim.getInstance().clearFuel();

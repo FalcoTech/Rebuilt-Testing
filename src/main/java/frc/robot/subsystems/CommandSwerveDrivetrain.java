@@ -413,6 +413,32 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public Translation2d getRobotToGoalVector(){
+        return new Translation2d(
+            getHubX() - getRobotX(),
+            getHubY() - getRobotY()
+        );
+    }
+    public Translation2d getRobotVelocityVector(){
+        ChassisSpeeds currentFieldRelativeVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, Rotation2d.fromDegrees(getGyroHeading()));
+        return new Translation2d(
+            currentFieldRelativeVelocity.vxMetersPerSecond,
+            currentFieldRelativeVelocity.vyMetersPerSecond
+            // 2
+        );
+    }
+    public Translation2d getMovingShotVector(){
+        return getRobotToGoalVector().minus(getRobotVelocityVector());
+    }
+    public double getTurretAngle(){
+        double rawAngle = (getMovingShotVector().getAngle().getDegrees()) % 360;
+        if (rawAngle < 0){
+            return rawAngle + 360;
+        } else {
+            return rawAngle;
+        }
+    }
+
     public void runTheNumbers(){
         SmartDashboard.putNumber("Robot X", getRobotX());
         SmartDashboard.putNumber("Robot Y", getRobotY());
