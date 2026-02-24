@@ -4,24 +4,17 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degree;
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radian;
 
-import org.opencv.core.Mat;
-
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -138,7 +131,12 @@ public class Robot extends TimedRobot {
     FuelSim.getInstance().updateSim();
     fuelSimCounter += 1;
     // double dist = Math.sqrt(Math.pow(RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX(), 2) + Math.pow(RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY(), 2));
-    double dist = RobotContainer.drivetrain.getMovingShotVector().getNorm();
+    double theta = Units.degreesToRadians(64.8);
+    
+    double dist = RobotContainer.drivetrain.getSimulatedGoalVector().getNorm();
+
+    double vel = Math.sqrt((9.81*dist*dist)/(2* Math.cos(theta) * Math.cos(theta) * (dist * Math.tan(theta) - 1.82))); //1.3088
+
     SmartDashboard.putNumber("Dist", dist);
 
     
@@ -159,9 +157,8 @@ public class Robot extends TimedRobot {
       //     (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
 
       //   ));
-      double theta = Units.degreesToRadians(64.8);
-      double vel = Math.sqrt((9.81*dist*dist)/(2* Math.cos(theta) * Math.cos(theta) * (dist * Math.tan(theta) - 1.36))); //1.3088
-      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(vel, MetersPerSecond), Angle.ofBaseUnits(1.04, Radian), Angle.ofBaseUnits(Units.degreesToRadians(RobotContainer.drivetrain.getTurretAngle()), Radian), Distance.ofBaseUnits(.56, Meters));
+      
+      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(vel, MetersPerSecond), Angle.ofBaseUnits(theta, Radian), Angle.ofBaseUnits(Math.toRadians(RobotContainer.drivetrain.getTurretShotAngle()), Radian), Distance.ofBaseUnits(.56, Meters));
     }
     if (fuelSimCounter % 600 == 0){
       FuelSim.getInstance().clearFuel();

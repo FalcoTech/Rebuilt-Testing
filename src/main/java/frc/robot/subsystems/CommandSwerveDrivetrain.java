@@ -379,47 +379,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return (getState().RawHeading.getDegrees() + 360000) % 360;        
     }
 
-    // WORKING ANGLE TO HUB (TRIG BASED)
-    // public double getAngleToHub(){
-    //     double rawAngle = (Math.atan2(getHubY()-getRobotY(), getHubX()-getRobotX()) * 180 / Math.PI - getGyroHeading()) % 360;
-
-    //     if (rawAngle < 0){
-    //         return rawAngle + 360;
-    //     } else {
-    //         return rawAngle;
-    //     }
-    // }
-
-    public double getAngleToHub(){
-        Translation2d robotToGoal = new Translation2d(
-            getHubX() - getRobotX(),
-            getHubY() - getRobotY()
-        );
-        
-        ChassisSpeeds currentFieldRelativeVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, Rotation2d.fromDegrees(getGyroHeading()));
-        Translation2d robotVelocity = new Translation2d(
-            currentFieldRelativeVelocity.vxMetersPerSecond,
-            currentFieldRelativeVelocity.vyMetersPerSecond
-            // 2
-        );
-
-        Translation2d movingShotVector = robotToGoal.minus(robotVelocity);
-
-        double rawAngle = (movingShotVector.getAngle().getDegrees() - getGyroHeading()) % 360;
-        if (rawAngle < 0){
-            return rawAngle + 360;
-        } else {
-            return rawAngle;
-        }
-    }
-
     public Translation2d getRobotToGoalVector(){
         return new Translation2d(
             getHubX() - getRobotX(),
             getHubY() - getRobotY()
         );
     }
-    public Translation2d getRobotVelocityVector(){
+    public Translation2d getFieldRelativeRobotVelocity(){
         ChassisSpeeds currentFieldRelativeVelocity = ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, Rotation2d.fromDegrees(getGyroHeading()));
         return new Translation2d(
             currentFieldRelativeVelocity.vxMetersPerSecond,
@@ -427,11 +393,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             // 2
         );
     }
-    public Translation2d getMovingShotVector(){
-        return getRobotToGoalVector().minus(getRobotVelocityVector());
+    public Translation2d getSimulatedGoalVector(){
+        return getRobotToGoalVector().minus(getFieldRelativeRobotVelocity());
     }
-    public double getTurretAngle(){
-        double rawAngle = (getMovingShotVector().getAngle().getDegrees()) % 360;
+
+    public double getTurretShotAngle(){
+        // double rawAngle = (getSimulatedGoalVector().getAngle().getDegrees() - getGyroHeading()) % 360;
+        double rawAngle = (getSimulatedGoalVector().getAngle().getDegrees()) % 360;
         if (rawAngle < 0){
             return rawAngle + 360;
         } else {
@@ -443,7 +411,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Robot X", getRobotX());
         SmartDashboard.putNumber("Robot Y", getRobotY());
         SmartDashboard.putNumber("Robot Heading", getGyroHeading());
-        SmartDashboard.putNumber("Angle to Hub", getAngleToHub());
-        publisher.set(new Pose2d(getRobotX(), getRobotY(), Rotation2d.fromDegrees(getAngleToHub() + getGyroHeading())));
+        SmartDashboard.putNumber("Angle to Hub", getTurretShotAngle());
+        publisher.set(new Pose2d(getRobotX(), getRobotY(), Rotation2d.fromDegrees(getTurretShotAngle() + getGyroHeading())));
     }
 }
