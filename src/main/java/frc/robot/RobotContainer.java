@@ -127,8 +127,9 @@ public class RobotContainer {
         // SmartDashboard.putData("Algae Intake Pathfind", algaeScorePathfind);
         SmartDashboard.putData("Pathfind to Nearest AprilTag", new InstantCommand(() -> tagAlign.pathfindToNearestAprilTagOld(false).schedule()));
 
-        FuelSim.getInstance().spawnStartingFuel();
-        FuelSim.getInstance().registerRobot(.69, .69, .18, () -> drivetrain.getState().Pose, () -> ChassisSpeeds.fromRobotRelativeSpeeds(drivetrain.getState().Speeds, Rotation2d.kZero));
+    FuelSim.getInstance().spawnStartingFuel();
+    // Use the robot's current pose rotation when converting robot-relative speeds to field frame
+    FuelSim.getInstance().registerRobot(.69, .69, .18, () -> drivetrain.getState().Pose, () -> ChassisSpeeds.fromRobotRelativeSpeeds(drivetrain.getState().Speeds, drivetrain.getState().Pose.getRotation()));
         FuelSim.getInstance().registerIntake(.1, .2, -.1, .1, () -> true);
         FuelSim.getInstance().start();
         FuelSim.getInstance().enableAirResistance();

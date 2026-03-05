@@ -17,6 +17,8 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -693,6 +695,7 @@ public class FuelSim {
                 fuel.pos = exit;
                 fuel.vel = getDispersalVelocity();
                 score++;
+                SmartDashboard.putNumber("# Fuel Scored", score);
             }
         }
 

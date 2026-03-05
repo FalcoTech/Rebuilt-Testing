@@ -8,8 +8,11 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radian;
 
+import java.util.TreeMap;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -30,9 +33,28 @@ public class Robot extends TimedRobot {
   private final boolean kUseLimelight = true;
   
   private boolean enableMegaTag2;
+
+  public double alpha = Math.toRadians(65);
+
+  public InterpolatingDoubleTreeMap shooterTreeMap = new InterpolatingDoubleTreeMap();
+
+  private int fuelShotCount = 0;
   
     public Robot() {
       m_robotContainer = new RobotContainer();
+
+      shooterTreeMap.put(1.883, 6.0);
+      shooterTreeMap.put(2.91, 7.0);
+      shooterTreeMap.put(3.897, 8.0);
+      shooterTreeMap.put(4.887, 9.0);
+      // shooterTreeMap.put(3.0, 5.0);
+      // shooterTreeMap.put(3.5, 5.0);
+      // shooterTreeMap.put(4.0, 5.0);
+      // shooterTreeMap.put(4.5, 5.0);
+      shooterTreeMap.put(5.455, 9.5);
+      shooterTreeMap.put(6.12, 10.1);
+      
+
     }
   
     @Override
@@ -131,16 +153,14 @@ public class Robot extends TimedRobot {
     FuelSim.getInstance().updateSim();
     fuelSimCounter += 1;
     // double dist = Math.sqrt(Math.pow(RobotContainer.drivetrain.getHubX() - RobotContainer.drivetrain.getRobotX(), 2) + Math.pow(RobotContainer.drivetrain.getHubY() - RobotContainer.drivetrain.getRobotY(), 2));
-    double theta = Units.degreesToRadians(64.8);
     
-    double dist = RobotContainer.drivetrain.getSimulatedGoalVector().getNorm();
-
-    double vel = Math.sqrt((9.81*dist*dist)/(2* Math.cos(theta) * Math.cos(theta) * (dist * Math.tan(theta) - 1.82))); //1.3088
-
+    // double dist = RobotContainer.drivetrain.getRobotToGoalVector().getNorm();
+    double dist = RobotContainer.drivetrain.targetVecDist();
     SmartDashboard.putNumber("Dist", dist);
 
-    
+    double thetaRad = Math.toRadians(RobotContainer.drivetrain.getTargetAngle());
 
+  
     if (fuelSimCounter == 1){
       FuelSim.getInstance().clearFuel();
     }
@@ -157,8 +177,9 @@ public class Robot extends TimedRobot {
       //     (1.3088 + (0.5 * 9.8) * dist)/dist + Math.sqrt(dist) - .3
 
       //   ));
-      
-      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(vel, MetersPerSecond), Angle.ofBaseUnits(theta, Radian), Angle.ofBaseUnits(Math.toRadians(RobotContainer.drivetrain.getTurretShotAngle()), Radian), Distance.ofBaseUnits(.56, Meters));
+      fuelShotCount++;
+      SmartDashboard.putNumber("Fuel Shot", fuelShotCount);
+      FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(shooterTreeMap.get(dist), MetersPerSecond), Angle.ofBaseUnits(alpha, Radian), Angle.ofBaseUnits(thetaRad, Radian), Distance.ofBaseUnits(.56, Meters));
     }
     if (fuelSimCounter % 600 == 0){
       FuelSim.getInstance().clearFuel();

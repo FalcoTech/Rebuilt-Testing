@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -79,6 +80,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private StructPublisher<Pose2d> publisher = NetworkTableInstance.getDefault().getStructTopic("Turret Pose", Pose2d.struct).publish();
     private StructPublisher<Translation2d> publisher2 = NetworkTableInstance.getDefault().getStructTopic("Turret Vector", Translation2d.struct).publish();
 
+    //TURRET
+    public double launchAngle = Math.toRadians(65);
+    public double phi = Math.toRadians(90-65);
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -390,16 +394,46 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new Translation2d(
             currentFieldRelativeVelocity.vxMetersPerSecond,
             currentFieldRelativeVelocity.vyMetersPerSecond
-            // 2
         );
     }
-    public Translation2d getSimulatedGoalVector(){
-        return getRobotToGoalVector().minus(getFieldRelativeRobotVelocity());
+    public Translation2d getFieldRelativeAcceleration(){
+        return new Translation2d(
+            getPigeon2().getAccelerationX().getValueAsDouble(),
+            getPigeon2().getAccelerationY().getValueAsDouble()
+        );
+            }
+    public Translation2d futurePos(){
+        return new Translation2d(
+            getRobotX() + (getFieldRelativeRobotVelocity().getX() * 1.2) + (getFieldRelativeAcceleration().getX() * 1 * 1),
+            getRobotY() + (getFieldRelativeRobotVelocity().getY() * 1.2) + (getFieldRelativeAcceleration().getY() * 1 * 1)
+        );
     }
+    public Translation2d goalLocation(){
+        return new Translation2d(
+            getHubX(),
+            getHubY()
+        );
+    }
+    public Translation2d targetVec(){
+        return goalLocation().minus(futurePos());
+    }
+    public double targetVecDist(){
+        return targetVec().getNorm();
+    }
+    
 
-    public double getTurretShotAngle(){
+    public double getAngleToHub(){
         // double rawAngle = (getSimulatedGoalVector().getAngle().getDegrees() - getGyroHeading()) % 360;
-        double rawAngle = (getSimulatedGoalVector().getAngle().getDegrees()) % 360;
+        double rawAngle = (getRobotToGoalVector().getAngle().getDegrees()) % 360;
+        if (rawAngle < 0){
+            return rawAngle + 360;
+        } else {
+            return rawAngle;
+        }
+    }
+    public double getTargetAngle(){
+        // double rawAngle = (getSimulatedGoalVector().getAngle().getDegrees() - getGyroHeading()) % 360;
+        double rawAngle = (targetVec().getAngle().getDegrees()) % 360;
         if (rawAngle < 0){
             return rawAngle + 360;
         } else {
@@ -407,11 +441,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    
+    public double getShotVelocity(){
+        double dist = targetVecDist();
+        return Math.sqrt((9.81*dist*dist)/(2* Math.cos(launchAngle) * Math.cos(launchAngle) * (dist * Math.tan(launchAngle) - 1.82))); //1.3088
+    }
+   
+
+   
+
     public void runTheNumbers(){
         SmartDashboard.putNumber("Robot X", getRobotX());
         SmartDashboard.putNumber("Robot Y", getRobotY());
         SmartDashboard.putNumber("Robot Heading", getGyroHeading());
-        SmartDashboard.putNumber("Angle to Hub", getTurretShotAngle());
-        publisher.set(new Pose2d(getRobotX(), getRobotY(), Rotation2d.fromDegrees(getTurretShotAngle() + getGyroHeading())));
+        SmartDashboard.putNumber("Angle to Hub", getAngleToHub());
+        publisher.set(new Pose2d(futurePos().getX(), futurePos().getY(), Rotation2d.fromDegrees(getGyroHeading())));
+        SmartDashboard.putNumber("X Accel", getFieldRelativeAcceleration().getX());
+        SmartDashboard.putNumber("Y Accel", getFieldRelativeAcceleration().getY());
+        
     }
 }
