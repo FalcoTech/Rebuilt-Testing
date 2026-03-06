@@ -404,8 +404,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             }
     public Translation2d futurePos(){
         return new Translation2d(
-            getRobotX() + (getFieldRelativeRobotVelocity().getX() * 1.2) + (getFieldRelativeAcceleration().getX() * 1 * 1),
-            getRobotY() + (getFieldRelativeRobotVelocity().getY() * 1.2) + (getFieldRelativeAcceleration().getY() * 1 * 1)
+            getRobotX() + (getFieldRelativeRobotVelocity().getX() * 1.2),
+            getRobotY() + (getFieldRelativeRobotVelocity().getY() * 1.2)
         );
     }
     public Translation2d goalLocation(){

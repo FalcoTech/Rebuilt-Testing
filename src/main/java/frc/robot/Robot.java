@@ -43,7 +43,9 @@ public class Robot extends TimedRobot {
     public Robot() {
       m_robotContainer = new RobotContainer();
 
+      shooterTreeMap.put(1.7, 5.75);
       shooterTreeMap.put(1.883, 6.0);
+      shooterTreeMap.put(2.425, 6.5);
       shooterTreeMap.put(2.91, 7.0);
       shooterTreeMap.put(3.897, 8.0);
       shooterTreeMap.put(4.887, 9.0);
@@ -53,6 +55,10 @@ public class Robot extends TimedRobot {
       // shooterTreeMap.put(4.5, 5.0);
       shooterTreeMap.put(5.455, 9.5);
       shooterTreeMap.put(6.12, 10.1);
+      shooterTreeMap.put(6.656, 10.5);
+      shooterTreeMap.put(7.215, 11.0);
+      shooterTreeMap.put(7.818, 11.5);
+      shooterTreeMap.put(8.35, 12.0);
       
 
     }
@@ -179,6 +185,8 @@ public class Robot extends TimedRobot {
       //   ));
       fuelShotCount++;
       SmartDashboard.putNumber("Fuel Shot", fuelShotCount);
+
+      // FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(12, MetersPerSecond), Angle.ofBaseUnits(alpha, Radian), Angle.ofBaseUnits(thetaRad, Radian), Distance.ofBaseUnits(.56, Meters));
       FuelSim.getInstance().launchFuel(LinearVelocity.ofBaseUnits(shooterTreeMap.get(dist), MetersPerSecond), Angle.ofBaseUnits(alpha, Radian), Angle.ofBaseUnits(thetaRad, Radian), Distance.ofBaseUnits(.56, Meters));
     }
     if (fuelSimCounter % 600 == 0){

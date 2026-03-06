@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.ClimbConstants;
 import frc.robot.Constants.ControllerConstants;
@@ -65,7 +66,8 @@ import static frc.robot.Constants.*;
 
 public class RobotContainer {
     /* Initialize Game Controllers */
-    public static final CommandPS4Controller pilot = new CommandPS4Controller(ControllerConstants.PILOT_CONTROLLER_PORT);
+    // public static final CommandPS4Controller pilot = new CommandPS4Controller(ControllerConstants.PILOT_CONTROLLER_PORT);
+    public static final CommandPS5Controller pilot = new CommandPS5Controller(ControllerConstants.PILOT_CONTROLLER_PORT);
     public static final CommandXboxController Copilot = new CommandXboxController(ControllerConstants.COPILOT_CONTROLLER_PORT);
 
     /* Set max speeds */
