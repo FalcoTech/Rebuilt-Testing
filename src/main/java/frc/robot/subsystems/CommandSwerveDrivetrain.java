@@ -441,12 +441,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    
-    public double getShotVelocity(){
-        double dist = targetVecDist();
-        return Math.sqrt((9.81*dist*dist)/(2* Math.cos(launchAngle) * Math.cos(launchAngle) * (dist * Math.tan(launchAngle) - 1.82))); //1.3088
+    public double getTurretAngle(){
+        double offset = 100;
+        double rawAngle = (getTargetAngle() - getGyroHeading() + offset) % 360;
+        double filteredAngle;
+        if (rawAngle < 0){
+            filteredAngle = rawAngle + 360;
+        } else {
+            filteredAngle = rawAngle;
+        };
+
+        if (filteredAngle > 0 && filteredAngle < 200){
+            SmartDashboard.putBoolean("Turret Possible Shot", true);
+            return filteredAngle;
+            
+        } else {
+            SmartDashboard.putBoolean("Turret Possible Shot", false);
+            return 9999;
+        }
     }
-   
+
+    
+    
 
    
 
@@ -455,9 +471,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Robot Y", getRobotY());
         SmartDashboard.putNumber("Robot Heading", getGyroHeading());
         SmartDashboard.putNumber("Angle to Hub", getAngleToHub());
+        SmartDashboard.putNumber("Turret Angle", getTurretAngle());
         publisher.set(new Pose2d(futurePos().getX(), futurePos().getY(), Rotation2d.fromDegrees(getGyroHeading())));
-        SmartDashboard.putNumber("X Accel", getFieldRelativeAcceleration().getX());
-        SmartDashboard.putNumber("Y Accel", getFieldRelativeAcceleration().getY());
-        
     }
 }
